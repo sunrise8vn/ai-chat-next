@@ -73,9 +73,12 @@ export default function Home() {
   };
 
   return (
-    <div style={{ padding: 20, margin: "0 auto" }}>
+    <div style={{ margin: "0 auto" }}>
       <h1>Trợ lý học tập Edumall xin chào !</h1>
-
+      <p>
+        Hãy nhập câu hỏi hoặc yêu cầu của bạn bên dưới để nhận trợ giúp từ AI.
+      </p>
+      <br />
       <div
         style={{
           border: "1px solid #ccc",
