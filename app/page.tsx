@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, KeyboardEvent } from "react";
+import { useState, useRef, useEffect, KeyboardEvent } from "react";
+import ReactMarkdown from "react-markdown";
 
 interface Message {
   sender: "user" | "bot";
@@ -10,6 +11,12 @@ interface Message {
 export default function Home() {
   const [input, setInput] = useState<string>("");
   const [messages, setMessages] = useState<Message[]>([]);
+  const chatEndRef = useRef<HTMLDivElement | null>(null);
+
+  // Scroll xuống cuối khi có message mới
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   async function sendMessage() {
     if (!input.trim()) return;
@@ -17,17 +24,23 @@ export default function Home() {
     const userMsg: Message = { sender: "user", text: input };
     setMessages((prev) => [...prev, userMsg]);
 
-    const res = await fetch("/api/chat", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: input }),
-    });
-
-    const data = await res.json();
-    const botMsg: Message = { sender: "bot", text: data.reply };
-    setMessages((prev) => [...prev, botMsg]);
-
     setInput("");
+
+    try {
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: input }),
+      });
+
+      const data = await res.json();
+      const botMsg: Message = { sender: "bot", text: data.reply };
+      setMessages((prev) => [...prev, botMsg]);
+    } catch (err) {
+      console.error("Error:", err);
+      const errorMsg: Message = { sender: "bot", text: "Có lỗi xảy ra!" };
+      setMessages((prev) => [...prev, errorMsg]);
+    }
   }
 
   function handleKeyDown(e: KeyboardEvent<HTMLInputElement>) {
@@ -38,7 +51,13 @@ export default function Home() {
   }
 
   return (
-    <div style={{ padding: 20 }}>
+    <div
+      style={{
+        padding: 20,
+        // maxWidth: 600,
+        margin: "0 auto",
+      }}
+    >
       <h1>Chatbot dùng Groq API (Free)</h1>
 
       <div
@@ -47,42 +66,63 @@ export default function Home() {
           padding: 10,
           height: 400,
           overflowY: "auto",
+          borderRadius: 8,
+          background: "#fafafa",
         }}
       >
         {messages.map((m, i) => (
-          <p
+          <div
             key={i}
-            style={{ textAlign: m.sender === "user" ? "right" : "left" }}
+            style={{
+              textAlign: m.sender === "user" ? "right" : "left",
+              margin: "10px 0",
+            }}
           >
-            <strong>{m.sender === "user" ? "Bạn" : "AI"}:</strong> {m.text}
-          </p>
+            <div
+              style={{
+                display: "inline-block",
+                background: m.sender === "user" ? "#DCF8C6" : "#F1F0F0",
+                padding: "8px 12px",
+                borderRadius: 12,
+                maxWidth: "70%",
+                textAlign: "left",
+                wordBreak: "break-word",
+              }}
+            >
+              <strong>{m.sender === "user" ? "Bạn" : "AI"}:</strong>
+              <ReactMarkdown>{m.text}</ReactMarkdown>
+            </div>
+          </div>
         ))}
+        <div ref={chatEndRef} />
       </div>
 
-      <input
-        value={input}
-        onChange={(e) => setInput(e.target.value)}
-        onKeyDown={handleKeyDown}
-        style={{
-          width: "80%",
-          marginTop: 10,
-          padding: 8,
-          border: "1px solid #ccc",
-        }}
-        placeholder="Nhập tin nhắn…"
-      />
-
-      <button
-        onClick={sendMessage}
-        style={{
-          marginLeft: 10,
-          padding: 8,
-          borderRadius: 4,
-          border: "1px solid #ccc",
-        }}
-      >
-        Gửi
-      </button>
+      <div style={{ marginTop: 10, display: "flex" }}>
+        <input
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={handleKeyDown}
+          style={{
+            flex: 1,
+            padding: 8,
+            border: "1px solid #ccc",
+            borderRadius: 4,
+          }}
+          placeholder="Nhập tin nhắn…"
+        />
+        <button
+          onClick={sendMessage}
+          style={{
+            marginLeft: 10,
+            padding: "8px 16px",
+            borderRadius: 4,
+            border: "1px solid #ccc",
+            cursor: "pointer",
+          }}
+        >
+          Gửi
+        </button>
+      </div>
     </div>
   );
 }
