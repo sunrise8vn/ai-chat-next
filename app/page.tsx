@@ -58,7 +58,7 @@ export default function Home() {
         margin: "0 auto",
       }}
     >
-      <h1>Chatbot dùng Groq API (Free)</h1>
+      <h1>Trợ lý học tập Edumall xin chào !</h1>
 
       <div
         style={{
