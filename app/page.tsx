@@ -3,7 +3,10 @@
 import { useState, useRef, useEffect, KeyboardEvent } from "react";
 import ReactMarkdown from "react-markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
+import {
+  oneDark,
+  oneLight,
+} from "react-syntax-highlighter/dist/esm/styles/prism";
 
 interface Message {
   sender: "user" | "bot";
@@ -55,9 +58,13 @@ export default function Home() {
   const renderers = {
     code({ node, inline, className, children, ...props }: any) {
       const match = /language-(\w+)/.exec(className || "");
+      const isDark =
+        window.matchMedia &&
+        window.matchMedia("(prefers-color-scheme: dark)").matches;
+
       return !inline && match ? (
         <SyntaxHighlighter
-          style={oneDark}
+          style={isDark ? oneDark : oneLight}
           language={match[1]}
           PreTag="div"
           {...props}
@@ -73,7 +80,15 @@ export default function Home() {
   };
 
   return (
-    <div style={{ margin: "0 auto" }}>
+    <div
+      style={{
+        margin: "0 auto",
+        color: "var(--text-color)",
+        background: "var(--bg-color)",
+        minHeight: "100vh",
+        transition: "background 0.3s, color 0.3s",
+      }}
+    >
       <h1>Trợ lý học tập Edumall xin chào !</h1>
       <p>
         Hãy nhập câu hỏi hoặc yêu cầu của bạn bên dưới để nhận trợ giúp từ AI.
@@ -86,7 +101,7 @@ export default function Home() {
           height: 450,
           overflowY: "auto",
           borderRadius: 8,
-          background: "#fafafa",
+          background: "var(--chat-bg-color)",
         }}
       >
         {messages.map((m, i) => (
@@ -100,7 +115,10 @@ export default function Home() {
             <div
               style={{
                 display: "inline-block",
-                background: m.sender === "user" ? "#DCF8C6" : "#F1F0F0",
+                background:
+                  m.sender === "user"
+                    ? "var(--user-bubble-bg)"
+                    : "var(--bot-bubble-bg)",
                 padding: "8px 12px",
                 borderRadius: 12,
                 maxWidth: "70%",
@@ -126,6 +144,8 @@ export default function Home() {
             padding: 8,
             border: "1px solid #ccc",
             borderRadius: 4,
+            background: "var(--input-bg)",
+            color: "var(--text-color)",
           }}
           placeholder="Nhập tin nhắn…"
         />
@@ -137,11 +157,40 @@ export default function Home() {
             borderRadius: 4,
             border: "1px solid #ccc",
             cursor: "pointer",
+            background: "var(--button-bg)",
+            color: "var(--button-text)",
           }}
         >
           Gửi
         </button>
       </div>
+
+      {/* CSS variables cho chế độ sáng/tối */}
+      <style jsx global>{`
+        :root {
+          --bg-color: #ffffff;
+          --text-color: #000000;
+          --chat-bg-color: #fafafa;
+          --user-bubble-bg: #dcf8c6;
+          --bot-bubble-bg: #f1f0f0;
+          --input-bg: #ffffff;
+          --button-bg: #f0f0f0;
+          --button-text: #000000;
+        }
+
+        @media (prefers-color-scheme: dark) {
+          :root {
+            --bg-color: #1e1e1e;
+            --text-color: #e0e0e0;
+            --chat-bg-color: #2c2c2c;
+            --user-bubble-bg: #4b6e4e;
+            --bot-bubble-bg: #3a3a3a;
+            --input-bg: #2c2c2c;
+            --button-bg: #3a3a3a;
+            --button-text: #e0e0e0;
+          }
+        }
+      `}</style>
     </div>
   );
 }
