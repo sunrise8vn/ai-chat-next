@@ -74,13 +74,13 @@ export default function Home() {
 
   return (
     <div style={{ padding: 20, margin: "0 auto" }}>
-      <h1>Chatbot dùng Groq API (Free)</h1>
+      <h1>Trợ lý học tập Edumall xin chào !</h1>
 
       <div
         style={{
           border: "1px solid #ccc",
           padding: 10,
-          height: 550,
+          height: 450,
           overflowY: "auto",
           borderRadius: 8,
           background: "#fafafa",
