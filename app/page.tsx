@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, KeyboardEvent } from "react";
 
 interface Message {
   sender: "user" | "bot";
@@ -24,11 +24,17 @@ export default function Home() {
     });
 
     const data = await res.json();
-
     const botMsg: Message = { sender: "bot", text: data.reply };
     setMessages((prev) => [...prev, botMsg]);
 
     setInput("");
+  }
+
+  function handleKeyDown(e: KeyboardEvent<HTMLInputElement>) {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      sendMessage();
+    }
   }
 
   return (
@@ -56,6 +62,7 @@ export default function Home() {
       <input
         value={input}
         onChange={(e) => setInput(e.target.value)}
+        onKeyDown={handleKeyDown}
         style={{
           width: "80%",
           marginTop: 10,
