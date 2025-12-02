@@ -2,6 +2,8 @@
 
 import { useState, useRef, useEffect, KeyboardEvent } from "react";
 import ReactMarkdown from "react-markdown";
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 
 interface Message {
   sender: "user" | "bot";
@@ -23,7 +25,6 @@ export default function Home() {
 
     const userMsg: Message = { sender: "user", text: input };
     setMessages((prev) => [...prev, userMsg]);
-
     setInput("");
 
     try {
@@ -50,21 +51,36 @@ export default function Home() {
     }
   }
 
+  // Tùy chỉnh ReactMarkdown để highlight code
+  const renderers = {
+    code({ node, inline, className, children, ...props }: any) {
+      const match = /language-(\w+)/.exec(className || "");
+      return !inline && match ? (
+        <SyntaxHighlighter
+          style={oneDark}
+          language={match[1]}
+          PreTag="div"
+          {...props}
+        >
+          {String(children).replace(/\n$/, "")}
+        </SyntaxHighlighter>
+      ) : (
+        <code className={className} {...props}>
+          {children}
+        </code>
+      );
+    },
+  };
+
   return (
-    <div
-      style={{
-        padding: 20,
-        // maxWidth: 600,
-        margin: "0 auto",
-      }}
-    >
-      <h1>Trợ lý học tập Edumall xin chào !</h1>
+    <div style={{ padding: 20, margin: "0 auto" }}>
+      <h1>Chatbot dùng Groq API (Free)</h1>
 
       <div
         style={{
           border: "1px solid #ccc",
           padding: 10,
-          height: 400,
+          height: 550,
           overflowY: "auto",
           borderRadius: 8,
           background: "#fafafa",
@@ -90,7 +106,7 @@ export default function Home() {
               }}
             >
               <strong>{m.sender === "user" ? "Bạn" : "AI"}:</strong>
-              <ReactMarkdown>{m.text}</ReactMarkdown>
+              <ReactMarkdown components={renderers}>{m.text}</ReactMarkdown>
             </div>
           </div>
         ))}
